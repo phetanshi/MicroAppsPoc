@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.Negotiate;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PS.Master.Api.Auth;
 using PS.Master.Api.AutoMapperProfiles;
@@ -14,7 +9,6 @@ using PS.Master.Data;
 using PS.Master.Data.Database;
 using PS.Master.Data.Definitions;
 using PS.Master.Logging;
-using System.Text;
 
 namespace PS.Master.Api
 {
@@ -27,11 +21,16 @@ namespace PS.Master.Api
             string connStr = builder.Configuration.GetConnectionString("AppDbConnection");
             string LogConnStr = builder.Configuration.GetConnectionString("AppLogDbConnection");
 
+            string masterDbConnStr = builder.Configuration.GetConnectionString("AppMasterDbConnection");
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
             builder.Services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(connStr));
+            builder.Services.AddDbContextPool<AppMasterDbContext>(options => options.UseSqlServer(masterDbConnStr));
+
+
             builder.Logging.AddDbLogger(config =>
             {
                 config.ConnectionString = LogConnStr;
@@ -51,7 +50,7 @@ namespace PS.Master.Api
             builder.Services.AddScoped<ISampleRepository, SampleRepository>();
             builder.Services.AddScoped<IConfigRepository, ConfigRepository>();
             builder.Services.AddScoped<IAppManagerRepository, AppManagerRepository>();
-
+            builder.Services.AddScoped<IAdoRepo, AdoRepo>();
 
             builder.Services.AddAutoMapper(typeof(EmployeeAutoMapperProfile));
 
@@ -121,7 +120,6 @@ namespace PS.Master.Api
 
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapRazorPages();
             app.MapControllers();

@@ -31,15 +31,7 @@ namespace PS.Master.Api.Controllers
         {
             try
             {
-                #if DEBUG
                 DeployResult result = await _appManagerService.DeployWebApplication(appArtifacts);
-                #endif
-
-                #if !DEBUG
-                string masterAppUrl = $"{Request.Scheme}://{Request.Host}:{Request.Host.Port ?? 80}";
-                DeployResult result = await _appManagerService.DeployWebApplication(appArtifacts, masterAppUrl);
-                #endif
-
                 return result;
             }
             catch (Exception ex)
