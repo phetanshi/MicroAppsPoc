@@ -35,6 +35,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\ChildApps\ConsoleApp1\ConsoleApp1\ConsoleApp1.csproj" />
 		<ProjectReference Include="..\PS.Master.Data\PS.Master.Data.csproj" />
 		<ProjectReference Include="..\PS.Master.Domain\PS.Master.Domain.csproj" />
 		<ProjectReference Include="..\PS.Master.Logging\PS.Master.Logging.csproj" />

@@ -53,10 +53,9 @@ namespace PS.Master.Api.Services.Definitions
 
             AppServer appServer = await GetAppServer(appArtifacts);
             DeployResult deployResult = new DeployResult();
-            deployResult.AppLogo = GetLogo("");
             deployResult.AppUrl = await CreateVirtualDir(appArtifacts, appServer);
+            await PublishFiles(appArtifacts, appServer.DeployRootPath, deployResult);
 
-            await PublishFiles(appArtifacts, appServer.DeployRootPath);
             await SaveToDatabase(appArtifacts, appServer, deployResult);
 
             return deployResult;
@@ -192,12 +191,20 @@ namespace PS.Master.Api.Services.Definitions
 
             return await Task.FromResult(deploy);
         }
-        private async Task PublishFiles(AppArtifacts appArtifacts, string deployRootPath)
+        private async Task PublishFiles(AppArtifacts appArtifacts, string deployRootPath, DeployResult deployResult)
         {
             await _appFileService.UnZipAllFiles(appArtifacts.AppZipFileStageFolderPath);
             var deploymentSettings = await GetDeployedSettings(appArtifacts.AppZipFileStageFolderPath);
-            await PublishDb(deploymentSettings, appArtifacts.AppZipFileStageFolderPath, deployRootPath);
+
+            if (deploymentSettings.IsDbNeeded)
+            {
+                await PublishDb(deploymentSettings, appArtifacts.AppZipFileStageFolderPath, deployRootPath);
+            }
+
             await PublishWebApp(deploymentSettings, appArtifacts.AppZipFileStageFolderPath, deployRootPath);
+
+            string publishFilePath = Path.Combine(deployRootPath, appArtifacts.AppName);
+            deployResult.AppLogo = GetLogo(publishFilePath, deploymentSettings.AppName, deploymentSettings.LogoFileName);
         }
 
         private async Task PublishWebApp(DeploySettings deploymentSettings, string stageFolderPath, string deployRootPath)
@@ -307,12 +314,23 @@ namespace PS.Master.Api.Services.Definitions
                 throw new Exception(AppConstants.ErrorMessage.vDirCreationFailed);
         }
 
-        private string GetLogo(string appZipFilePath)
+        private string GetLogo(string appZipFilePath, string appName, string logoFileName = "")
         {
             string logo = "";
             byte[] logoBytes;
-            string defaultLogoPath = Path.Combine(_webHostEnv.ContentRootPath, "StaticFiles", "ps_logo.png");
-            Sys.Image logoImg = Sys.Image.FromFile(defaultLogoPath);
+
+            string defaultLogoFilePath = Path.Combine(_webHostEnv.ContentRootPath, "StaticFiles", "ps_logo.png");
+
+            Sys.Image logoImg = Sys.Image.FromFile(defaultLogoFilePath);
+
+            if (!string.IsNullOrEmpty(logoFileName))
+            {
+                string appLogoFile = Path.Combine(appZipFilePath, logoFileName);
+                if (File.Exists(appLogoFile))
+                {
+                    logoImg = Sys.Image.FromFile(appLogoFile);
+                }
+            }
 
             using (var ms = new MemoryStream())
             {
@@ -322,7 +340,6 @@ namespace PS.Master.Api.Services.Definitions
 
             if (logoBytes != null)
             {
-                //logo = Encoding.Default.GetString(logoBytes);
                 logo = Convert.ToBase64String(logoBytes);
             }
 

@@ -10,6 +10,7 @@ namespace PS.Master.ViewModels.Models
     {
         public string AppName { get; set; }
         public string AppDisplayName { get; set; }
+        public string LogoFileName { get; set; }
         public bool IsDbNeeded { get; set; }
         public bool IsWinServiceNeeded { get; set; }
         public string DbZipFile { get; set; }

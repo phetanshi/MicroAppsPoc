@@ -37,7 +37,7 @@ namespace PS.Master.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.ToString());
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, "Something went wrong while deploying files");
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, ex.ToString());
             }
         }
 
@@ -53,7 +53,7 @@ namespace PS.Master.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.ToString());
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, "Something went wrong while deploying files");
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, ex.ToString());
             }
         }
     }
